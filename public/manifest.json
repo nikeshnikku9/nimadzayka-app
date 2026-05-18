@@ -1,0 +1,16 @@
+{
+  "name": "Nimad ZAYKA Spices",
+  "short_name": "Nimad ZAYKA",
+  "description": "Premium Indian spices from Nimad - Nimad Ka Swaad",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fdfaf3",
+  "theme_color": "#B91C1C",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgZmlsbD0iI0I5MUMxQyIvPjx0ZXh0IHg9Ijk2IiB5PSI4NSIgZm9udC1mYW1pbHk9IkNpbnplbCxzZXJpZiIgZm9udC1zaXplPSIzNCIgZm9udC13ZWlnaHQ9IjkwMCIgZmlsbD0iI0ZGRjhFNyIgdGV4dC1hbmNob3I9Im1pZGRsZSI+TklNQUQ8L3RleHQ+PHRleHQgeD0iOTYiIHk9IjEyMCIgZm9udC1mYW1pbHk9IkNpbnplbCxzZXJpZiIgZm9udC1zaXplPSIzNCIgZm9udC13ZWlnaHQ9IjkwMCIgZmlsbD0iI0ZGRjhFNyIgdGV4dC1hbmNob3I9Im1pZGRsZSI+WkFZS0E8L3RleHQ+PC9zdmc+",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ]
+}
