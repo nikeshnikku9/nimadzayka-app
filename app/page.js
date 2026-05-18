@@ -1,86 +1,168 @@
-'use client';
+"'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent } from '@/components/ui/card';
-import { toast } from 'sonner';
-import { Lock, Eye, EyeOff } from 'lucide-react';
+import { useEffect } from 'react';
+import Link from 'next/link';
 import Logo from '@/components/Logo';
+import {
+  MessageCircle, Instagram, Globe, BookOpen, Phone, MapPin,
+} from 'lucide-react';
+import { brandInfo } from '@/lib/seed-data';
 
-export default function AdminLogin() {
-  const router = useRouter();
-  const [password, setPassword] = useState('');
-  const [show, setShow] = useState(false);
-  const [loading, setLoading] = useState(false);
-
+export default function Home() {
   useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('nz_admin_token') : null;
-    if (token) router.replace('/admin/dashboard');
-  }, [router]);
+    fetch('/api/analytics/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event: 'qr_scan', path: '/' }),
+    }).catch(() => {});
+  }, []);
 
-  const submit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+  const track = (event) => {
+    // Fire-and-forget tracking using sendBeacon (works while navigating away)
     try {
-      const r = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
-      });
-      const data = await r.json();
-      if (r.ok && data.token) {
-        localStorage.setItem('nz_admin_token', data.token);
-        toast.success('Welcome back!');
-        router.replace('/admin/dashboard');
+      const data = JSON.stringify({ event, path: '/' });
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon('/api/analytics/track', new Blob([data], { type: 'application/json' }));
       } else {
-        toast.error(data.error || 'Invalid password');
+        fetch('/api/analytics/track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: data, keepalive: true });
       }
-    } catch { toast.error('Network error'); }
-    setLoading(false);
+    } catch {}
   };
 
+  const whatsappUrl = `https://wa.me/${brandInfo.whatsapp}?text=${encodeURIComponent('Hello Nimad ZAYKA! I would like to know more about your spices.')}`;
+  const websiteUrl = `https://${brandInfo.website}`;
+
+  const buttons = [
+    {
+      label: 'Order on WhatsApp',
+      sub: '+91 6265996333',
+      icon: MessageCircle,
+      bg: 'bg-gradient-to-br from-green-500 to-green-700',
+      href: whatsappUrl,
+      event: 'whatsapp_click',
+      external: true,
+    },
+    {
+      label: 'Follow on Instagram',
+      sub: '@nimadzayka.in',
+      icon: Instagram,
+      bg: 'bg-gradient-to-br from-pink-500 via-red-500 to-yellow-500',
+      href: brandInfo.instagram,
+      event: 'instagram_click',
+      external: true,
+    },
+    {
+      label: 'Visit Our Website',
+      sub: 'nimadzayka.com',
+      icon: Globe,
+      bg: 'bg-gradient-to-br from-amber-500 to-yellow-700',
+      href: websiteUrl,
+      event: 'website_click',
+      external: true,
+    },
+    {
+      label: 'View Brochure',
+      sub: 'All products & catalogue',
+      icon: BookOpen,
+      bg: 'bg-gradient-to-br from-red-700 to-red-950',
+      href: '/brochure',
+      event: 'brochure_click',
+      external: false,
+    },
+  ];
+
   return (
-    <main className="min-h-screen flex items-center justify-center brand-gradient p-4 relative overflow-hidden">
-      <div className="absolute inset-0 spice-pattern" />
-      <Card className="glass w-full max-w-md relative z-10 border-yellow-400/30">
-        <CardContent className="p-8">
-          <div className="flex flex-col items-center mb-6">
-            <Logo size="lg" />
-            <div className="divider-ornament mt-4 w-full">
-              <span className="text-yellow-700 text-xs tracking-[0.3em] font-semibold">ADMIN PORTAL</span>
-            </div>
+    <main className=\"min-h-screen brand-gradient relative overflow-hidden\">
+      {/* Background layers — all pointer-events-none so they never block clicks */}
+      <div className=\"absolute inset-0 spice-pattern opacity-60 pointer-events-none\" />
+      <div
+        className=\"absolute inset-0 opacity-20 pointer-events-none\"
+        style={{
+          backgroundImage: 'url(https://images.unsplash.com/photo-1716816211590-c15a328a5ff0)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      />
+      <div className=\"absolute inset-0 bg-gradient-to-b from-red-950/40 via-transparent to-black/70 pointer-events-none\" />
+
+      <div className=\"relative z-10 min-h-screen flex flex-col items-center justify-between p-6 max-w-md mx-auto\">
+        {/* TOP / LOGO */}
+        <div className=\"flex-shrink-0 pt-8 flex flex-col items-center\">
+          <div className=\"float\">
+            <Logo size=\"xl\" />
           </div>
-          <form onSubmit={submit} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="pwd" className="text-zinc-800">Admin Password</Label>
-              <div className="relative">
-                <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
-                <Input
-                  id="pwd"
-                  type={show ? 'text' : 'password'}
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  placeholder="Enter password"
-                  className="pl-9 pr-9 h-11"
-                  required
-                />
-                <button type="button" onClick={() => setShow(!show)} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700">
-                  {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
+          <div className=\"divider-ornament mt-6 w-72\">
+            <span className=\"text-yellow-300 text-[10px] tracking-[0.4em] font-semibold\">PREMIUM INDIAN SPICES</span>
+          </div>
+          <h1 className=\"mt-5 text-2xl sm:text-3xl font-serif-display italic gold-text text-center px-4 leading-tight\">
+            Swaad jo Nimad se aayo
+          </h1>
+        </div>
+
+        {/* BUTTONS — all anchor tags for guaranteed reliability */}
+        <div className=\"w-full space-y-3 mt-8 relative z-20\">
+          {buttons.map(({ label, sub, icon: Icon, bg, href, event, external }) => {
+            const inner = (
+              <div className={`${bg} rounded-2xl p-4 flex items-center gap-4 shadow-2xl border border-yellow-400/20 active:scale-95 transition-transform`}>
+                <div className=\"w-12 h-12 rounded-full bg-white/20 backdrop-blur flex items-center justify-center shrink-0\">
+                  <Icon className=\"w-6 h-6 text-white\" />
+                </div>
+                <div className=\"flex-1 text-left\">
+                  <div className=\"text-white font-semibold text-base leading-tight\">{label}</div>
+                  <div className=\"text-white/80 text-xs mt-0.5\">{sub}</div>
+                </div>
+                <div className=\"text-white/70 text-xl\">›</div>
               </div>
-            </div>
-            <Button type="submit" disabled={loading} className="btn-gold w-full h-11 text-base">
-              {loading ? 'Authenticating…' : 'Sign In'}
-            </Button>
-          </form>
-          <p className="mt-6 text-center text-xs text-zinc-500">
-            Secure dashboard access for Nimad ZAYKA Spices
-          </p>
-        </CardContent>
-      </Card>
+            );
+
+            if (external) {
+              return (
+                <a
+                  key={label}
+                  href={href}
+                  target=\"_blank\"
+                  rel=\"noopener noreferrer\"
+                  onClick={() => track(event)}
+                  className=\"block cursor-pointer\"
+                >
+                  {inner}
+                </a>
+              );
+            }
+            return (
+              <Link
+                key={label}
+                href={href}
+                onClick={() => track(event)}
+                className=\"block cursor-pointer\"
+              >
+                {inner}
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* FOOTER */}
+        <div className=\"flex-shrink-0 pb-6 pt-8 text-center w-full\">
+          <div className=\"divider-ornament w-full mb-3\">
+            <span className=\"text-yellow-400/80 text-[10px] tracking-[0.3em]\">FSSAI: {brandInfo.fssai}</span>
+          </div>
+          <div className=\"flex items-center justify-center gap-3 text-xs text-yellow-100/70 mb-2\">
+            <a href={`tel:${brandInfo.phone}`} className=\"flex items-center gap-1 hover:text-yellow-300\">
+              <Phone className=\"w-3 h-3\" /> {brandInfo.phone}
+            </a>
+          </div>
+          <div className=\"text-[10px] text-yellow-100/50 flex items-start justify-center gap-1 px-2\">
+            <MapPin className=\"w-3 h-3 mt-0.5 shrink-0\" />
+            <span>Julwaniya Road, Rajpur, Barwani, MP - 451447</span>
+          </div>
+          <div className=\"text-[10px] text-yellow-100/40 mt-3\">
+            © {new Date().getFullYear()} Nimad ZAYKA Spices ·
+            <Link href=\"/admin\" className=\"ml-1 hover:text-yellow-300\">Admin</Link>
+          </div>
+        </div>
+      </div>
     </main>
   );
 }
+"
