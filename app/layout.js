@@ -1,3 +1,5 @@
+import "./globals.css";
+
 export const metadata = {
   title: "Nimad ZAYKA",
   description: "Premium Spice Brand Platform",
