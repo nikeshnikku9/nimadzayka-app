@@ -39,7 +39,7 @@ export default function AdminShell({ children }) {
   };
 
   const Sidebar = ({ onNav }) => (
-    <aside className="w-64 brand-gradient text-yellow-100 min-h-screen flex flex-col">
+    <aside className="w-64 admin-sidebar" brand-gradient text-yellow-100 min-h-screen flex flex-col">
       <div className="p-5 border-b border-yellow-400/20">
             <Logo size="md" />
             <div className="mt-2 text-xs tracking-widest text-yellow-300">ADMIN PORTAL</div>
