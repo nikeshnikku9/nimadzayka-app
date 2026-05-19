@@ -1,6 +1,5 @@
 'use client'
 
-import Image from "next/image";
 import {
   Phone,
   Globe,
@@ -15,7 +14,7 @@ export default function Home() {
   return (
     <main className="relative min-h-screen overflow-hidden">
 
-      {/* BACKGROUND IMAGE */}
+      {/* SPICES BACKGROUND */}
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{
@@ -25,39 +24,39 @@ export default function Home() {
       />
 
       {/* DARK OVERLAY */}
-      <div className="absolute inset-0 bg-black/70" />
+      <div className="absolute inset-0 bg-black/75" />
 
       {/* CONTENT */}
       <div className="relative z-10 flex flex-col items-center px-5 py-10">
 
-        {/* LOGO */}
-        <div className="w-[230px] mb-5">
-          <Image
-            src="https://i.postimg.cc/4x6M0L7M/nimad-zayka-logo.png"
-            alt="Nimad Zayka"
-            width={500}
-            height={500}
-            className="w-full drop-shadow-2xl"
-          />
+        {/* MAIN BRAND */}
+        <div className="text-center">
+
+          <div className="bg-red-700/95 border-4 border-yellow-500 rounded-3xl px-10 py-8 shadow-2xl">
+            <h1 className="text-white text-6xl md:text-7xl font-extrabold tracking-wide leading-tight">
+              NIMAD
+              <br />
+              ZAYKA
+            </h1>
+
+            <p className="text-white text-2xl mt-3 tracking-[4px] font-semibold">
+              SPICES
+            </p>
+          </div>
+
+          {/* PREMIUM TEXT */}
+          <div className="mt-8">
+            <p className="text-yellow-400 text-2xl md:text-3xl font-semibold tracking-[4px]">
+              PREMIUM INDIAN SPICES
+            </p>
+
+            <div className="w-72 h-[2px] bg-yellow-500 mx-auto mt-4 mb-4" />
+
+            <p className="text-yellow-100 text-xl italic">
+              Swaad jo Nimad se aayo
+            </p>
+          </div>
         </div>
-
-        {/* MAIN HEADING */}
-        <h1 className="text-5xl md:text-6xl font-extrabold text-white text-center tracking-wide drop-shadow-2xl">
-          NIMAD ZAYKA
-        </h1>
-
-        {/* SUBTITLE */}
-        <p className="text-yellow-400 text-lg md:text-2xl mt-4 tracking-[5px] font-semibold text-center">
-          PREMIUM INDIAN SPICES
-        </p>
-
-        {/* LINE */}
-        <div className="w-56 h-[2px] bg-yellow-500 mt-5 mb-5" />
-
-        {/* TAGLINE */}
-        <h2 className="text-yellow-100 text-2xl italic text-center font-semibold">
-          Swaad jo Nimad se aayo
-        </h2>
 
         {/* BUTTONS */}
         <div className="w-full max-w-md mt-10 flex flex-col gap-5">
@@ -69,11 +68,16 @@ export default function Home() {
             className="flex items-center justify-between rounded-3xl bg-green-600/90 border border-green-300 p-5 shadow-2xl hover:scale-[1.02] transition"
           >
             <div className="flex items-center gap-4">
-              <MessageCircle size={42} className="text-white" />
+
+              <div className="w-16 h-16 rounded-full border-2 border-white flex items-center justify-center">
+                <MessageCircle size={38} className="text-white" />
+              </div>
+
               <div>
                 <h3 className="text-white text-2xl font-bold">
                   Order on WhatsApp
                 </h3>
+
                 <p className="text-green-100 text-lg">
                   +91 6265996333
                 </p>
@@ -90,7 +94,10 @@ export default function Home() {
             className="flex items-center justify-between rounded-3xl bg-gradient-to-r from-pink-500 to-orange-500 border border-pink-300 p-5 shadow-2xl hover:scale-[1.02] transition"
           >
             <div className="flex items-center gap-4">
-              <Instagram size={42} className="text-white" />
+
+              <div className="w-16 h-16 rounded-full border-2 border-white flex items-center justify-center">
+                <Instagram size={38} className="text-white" />
+              </div>
 
               <div>
                 <h3 className="text-white text-2xl font-bold">
@@ -114,7 +121,9 @@ export default function Home() {
           >
             <div className="flex items-center gap-4">
 
-              <Globe size={42} className="text-white" />
+              <div className="w-16 h-16 rounded-full border-2 border-white flex items-center justify-center">
+                <Globe size={38} className="text-white" />
+              </div>
 
               <div>
                 <h3 className="text-white text-2xl font-bold">
@@ -137,7 +146,9 @@ export default function Home() {
           >
             <div className="flex items-center gap-4">
 
-              <Phone size={42} className="text-white" />
+              <div className="w-16 h-16 rounded-full border-2 border-white flex items-center justify-center">
+                <Phone size={38} className="text-white" />
+              </div>
 
               <div>
                 <h3 className="text-white text-2xl font-bold">
@@ -161,7 +172,9 @@ export default function Home() {
           >
             <div className="flex items-center gap-4">
 
-              <MapPin size={42} className="text-white" />
+              <div className="w-16 h-16 rounded-full border-2 border-white flex items-center justify-center">
+                <MapPin size={38} className="text-white" />
+              </div>
 
               <div>
                 <h3 className="text-white text-2xl font-bold">
@@ -184,7 +197,9 @@ export default function Home() {
           >
             <div className="flex items-center gap-4">
 
-              <BookOpen size={42} className="text-white" />
+              <div className="w-16 h-16 rounded-full border-2 border-white flex items-center justify-center">
+                <BookOpen size={38} className="text-white" />
+              </div>
 
               <div>
                 <h3 className="text-white text-2xl font-bold">
@@ -202,31 +217,36 @@ export default function Home() {
         </div>
 
         {/* FOOTER */}
-        <div className="mt-14 text-center text-yellow-100">
+        <div className="mt-14 text-center text-yellow-100 border-t border-yellow-600 pt-8 w-full max-w-4xl">
 
-          <div className="flex flex-col md:flex-row items-center justify-center gap-8 text-lg">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-10 text-lg">
 
             <div>
-              <p className="font-bold text-yellow-300">
-                FSSAI
+              <p className="text-3xl font-bold italic">
+                fssai
               </p>
 
-              <p>21425190000195</p>
+              <p className="mt-2">
+                FSSAI: 21425190000195
+              </p>
             </div>
 
             <div>
-              <p className="font-bold text-yellow-300">
+              <p className="font-bold text-yellow-300 text-3xl">
                 100% NATURAL
               </p>
             </div>
 
             <div>
-              <p className="font-bold text-yellow-300">
+              <p className="font-bold text-yellow-300 text-2xl">
                 Packed with Purity,
               </p>
 
-              <p>Delivered with Trust.</p>
+              <p className="text-xl">
+                Delivered with Trust.
+              </p>
             </div>
+
           </div>
         </div>
       </div>
