@@ -7,7 +7,7 @@ export default function BarcodePage() {
 
   const svgRef = useRef(null)
 
-  const [barcode, setBarcode] = useState('8901234567890')
+  const [barcode, setBarcode] = useState('9201234567890')
   const [product, setProduct] = useState('')
   const [price, setPrice] = useState('')
   const [stock, setStock] = useState('')
@@ -20,15 +20,17 @@ export default function BarcodePage() {
 
       JsBarcode(svgRef.current, barcode, {
         format: 'EAN13',
-        lineColor: '#000',
-        background: '#fff',
+        lineColor: '#000000',
+        background: '#ffffff',
         width: 2,
-        height: 100,
+        height: 120,
         displayValue: true,
+        fontSize: 20,
+        margin: 10,
       })
 
-    } catch (err) {
-      console.log(err)
+    } catch (e) {
+      console.log(e)
     }
 
   }, [barcode])
@@ -37,7 +39,7 @@ export default function BarcodePage() {
 
     try {
 
-      const res = await fetch('/api/products', {
+      const response = await fetch('/api/products', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -50,17 +52,25 @@ export default function BarcodePage() {
         }),
       })
 
-      const data = await res.json()
-
-      alert('Product Saved Successfully')
+      const data = await response.json()
 
       console.log(data)
+
+      if (data.success) {
+
+        alert('Product Saved Successfully')
+
+      } else {
+
+        alert(data.error || 'Save Failed')
+
+      }
 
     } catch (err) {
 
       console.log(err)
 
-      alert('Error Saving Product')
+      alert('Server Error')
 
     }
 
@@ -70,14 +80,20 @@ export default function BarcodePage() {
 
     <div
       style={{
+        background: '#0f0f0f',
         minHeight: '100vh',
-        background: '#111',
-        color: 'white',
         padding: '40px',
+        color: 'white',
       }}
     >
 
-      <h1 style={{ fontSize: '40px', marginBottom: '30px' }}>
+      <h1
+        style={{
+          fontSize: '42px',
+          marginBottom: '30px',
+          color: '#FFD700',
+        }}
+      >
         Barcode Studio
       </h1>
 
@@ -91,7 +107,7 @@ export default function BarcodePage() {
 
         <div
           style={{
-            background: '#1e1e1e',
+            background: '#1b1b1b',
             padding: '30px',
             borderRadius: '20px',
             width: '400px',
@@ -99,30 +115,30 @@ export default function BarcodePage() {
         >
 
           <input
-            placeholder="Barcode"
             value={barcode}
             onChange={(e) => setBarcode(e.target.value)}
+            placeholder="Barcode"
             style={inputStyle}
           />
 
           <input
-            placeholder="Product Name"
             value={product}
             onChange={(e) => setProduct(e.target.value)}
+            placeholder="Product Name"
             style={inputStyle}
           />
 
           <input
-            placeholder="Price"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
+            placeholder="Price"
             style={inputStyle}
           />
 
           <input
-            placeholder="Stock"
             value={stock}
             onChange={(e) => setStock(e.target.value)}
+            placeholder="Stock"
             style={inputStyle}
           />
 
@@ -133,11 +149,11 @@ export default function BarcodePage() {
               background: '#FFD700',
               color: '#000',
               border: 'none',
-              padding: '15px',
+              padding: '16px',
               borderRadius: '12px',
               fontWeight: 'bold',
+              fontSize: '18px',
               cursor: 'pointer',
-              marginTop: '20px',
             }}
           >
             SAVE PRODUCT
@@ -147,7 +163,7 @@ export default function BarcodePage() {
 
         <div
           style={{
-            background: '#1e1e1e',
+            background: '#1b1b1b',
             padding: '30px',
             borderRadius: '20px',
           }}
@@ -155,7 +171,7 @@ export default function BarcodePage() {
 
           <div
             style={{
-              background: '#fff',
+              background: '#ffffff',
               padding: '30px',
               borderRadius: '20px',
             }}
@@ -178,9 +194,10 @@ export default function BarcodePage() {
 const inputStyle = {
   width: '100%',
   padding: '15px',
-  marginBottom: '15px',
+  marginBottom: '20px',
   borderRadius: '10px',
   border: '1px solid #444',
-  background: '#222',
+  background: '#111',
   color: '#fff',
+  fontSize: '16px',
 }
