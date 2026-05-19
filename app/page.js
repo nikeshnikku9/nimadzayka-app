@@ -8,13 +8,14 @@ import {
   Instagram,
   MessageCircle,
   ChevronRight,
+  ShieldCheck,
 } from "lucide-react";
 
 export default function Home() {
   return (
     <main className="relative min-h-screen overflow-hidden">
 
-      {/* SPICES BACKGROUND */}
+      {/* BACKGROUND */}
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{
@@ -26,27 +27,28 @@ export default function Home() {
       {/* DARK OVERLAY */}
       <div className="absolute inset-0 bg-black/75" />
 
-      {/* CONTENT */}
+      {/* MAIN CONTENT */}
       <div className="relative z-10 flex flex-col items-center px-5 py-10">
 
-        {/* MAIN BRAND */}
+        {/* BRAND BOX */}
         <div className="text-center">
 
-          <div className="bg-red-700/95 border-4 border-yellow-500 rounded-3xl px-10 py-8 shadow-2xl">
-            <h1 className="text-white text-6xl md:text-7xl font-extrabold tracking-wide leading-tight">
+          <div className="bg-red-700/95 border-4 border-yellow-500 rounded-[35px] px-10 py-8 shadow-2xl">
+            <h1 className="text-white text-6xl md:text-7xl font-extrabold leading-tight tracking-wide">
               NIMAD
               <br />
               ZAYKA
             </h1>
 
-            <p className="text-white text-2xl mt-3 tracking-[4px] font-semibold">
+            <p className="text-white text-2xl mt-3 tracking-[5px] font-semibold">
               SPICES
             </p>
           </div>
 
-          {/* PREMIUM TEXT */}
+          {/* PREMIUM */}
           <div className="mt-8">
-            <p className="text-yellow-400 text-2xl md:text-3xl font-semibold tracking-[4px]">
+
+            <p className="text-yellow-400 text-2xl md:text-3xl font-semibold tracking-[5px]">
               PREMIUM INDIAN SPICES
             </p>
 
@@ -55,6 +57,7 @@ export default function Home() {
             <p className="text-yellow-100 text-xl italic">
               Swaad jo Nimad se aayo
             </p>
+
           </div>
         </div>
 
@@ -192,7 +195,8 @@ export default function Home() {
 
           {/* BROCHURE */}
           <a
-            href="#"
+            href="/brochure.pdf"
+            target="_blank"
             className="flex items-center justify-between rounded-3xl bg-gradient-to-r from-red-700 to-orange-700 border border-orange-300 p-5 shadow-2xl hover:scale-[1.02] transition"
           >
             <div className="flex items-center gap-4">
@@ -217,10 +221,11 @@ export default function Home() {
         </div>
 
         {/* FOOTER */}
-        <div className="mt-14 text-center text-yellow-100 border-t border-yellow-600 pt-8 w-full max-w-4xl">
+        <div className="mt-14 text-center text-yellow-100 border-t border-yellow-600 pt-8 w-full max-w-5xl">
 
           <div className="flex flex-col md:flex-row items-center justify-center gap-10 text-lg">
 
+            {/* FSSAI */}
             <div>
               <p className="text-3xl font-bold italic">
                 fssai
@@ -231,12 +236,14 @@ export default function Home() {
               </p>
             </div>
 
+            {/* NATURAL */}
             <div>
               <p className="font-bold text-yellow-300 text-3xl">
                 100% NATURAL
               </p>
             </div>
 
+            {/* TRUST */}
             <div>
               <p className="font-bold text-yellow-300 text-2xl">
                 Packed with Purity,
@@ -246,6 +253,28 @@ export default function Home() {
                 Delivered with Trust.
               </p>
             </div>
+
+            {/* ADMIN PANEL */}
+            <a
+              href="/admin"
+              className="bg-black/70 border border-yellow-400 rounded-2xl px-5 py-4 hover:bg-black/90 transition"
+            >
+              <div className="flex items-center gap-3">
+
+                <ShieldCheck className="text-yellow-400" size={28} />
+
+                <div className="text-left">
+                  <h3 className="text-white font-bold text-lg">
+                    Admin Panel
+                  </h3>
+
+                  <p className="text-yellow-300 text-sm">
+                    Manage Website
+                  </p>
+                </div>
+
+              </div>
+            </a>
 
           </div>
         </div>
