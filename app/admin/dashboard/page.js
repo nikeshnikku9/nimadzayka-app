@@ -113,4 +113,27 @@ export default function Dashboard() {
     </div>
   );
 }
+<div className="mt-10 flex justify-center">
+  <div className="admin-glass rounded-3xl px-10 py-6 flex gap-10 items-center text-[#ffcc70]">
+    
+    <div className="text-center">
+      <h3 className="text-2xl font-bold">FSSAI</h3>
+      <p className="text-lg">21425190000195</p>
+    </div>
 
+    <div className="w-px h-16 bg-[#ffcc70]" />
+
+    <div className="text-center">
+      <h3 className="text-2xl font-bold">100%</h3>
+      <p className="text-lg">NATURAL</p>
+    </div>
+
+    <div className="w-px h-16 bg-[#ffcc70]" />
+
+    <div className="text-center">
+      <h3 className="text-2xl font-bold">Packed with Purity</h3>
+      <p className="text-lg">Delivered with Trust.</p>
+    </div>
+
+  </div>
+</div>
