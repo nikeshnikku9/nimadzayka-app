@@ -1,303 +1,258 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useDropzone } from 'react-dropzone';
+import { useEffect, useState, useRef } from 'react';
+import JsBarcode from 'jsbarcode';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Save, X, Plus, Upload, ArrowLeft, Image as ImageIcon } from 'lucide-react';
-import Link from 'next/link';
+import { Download, Printer, Barcode as BarcodeIcon, FileText } from 'lucide-react';
 
-async function fileToBase64(file, maxW = 1200) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        let w = img.width, h = img.height;
-        if (w > maxW) { h = h * (maxW / w); w = maxW; }
-        canvas.width = w; canvas.height = h;
-        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', 0.85));
-      };
-      img.onerror = reject;
-      img.src = e.target.result;
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
+function BarcodeImage({ value, format = 'CODE128', text, height = 60, width = 1.8, displayValue = true }) {
+  const svgRef = useRef(null);
+  useEffect(() => {
+    if (!svgRef.current || !value) return;
+    try {
+      JsBarcode(svgRef.current, value, {
+        format, height, width, displayValue,
+        text: text || value,
+        background: '#ffffff',
+        lineColor: '#0A0A0A',
+        font: 'Inter, monospace',
+        fontSize: 12,
+        margin: 6,
+      });
+    } catch (e) {
+      console.warn('Barcode error', e);
+    }
+  }, [value, format, text, height, width, displayValue]);
+  return <svg ref={svgRef} />;
 }
 
-const slugify = s => s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+export default function BarcodePage() {
+  const [tab, setTab] = useState('single');
+  const [products, setProducts] = useState([]);
 
-export default function ProductForm({ mode, id }) {
-  const router = useRouter();
-  const [loading, setLoading] = useState(mode === 'edit');
-  const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({
-    name: '', nameHindi: '', slug: '', category: 'standard-plastic', tagline: '',
-    description: '', ingredients: '', usage: '', recipes: '',
-    variants: [{ weight: '100g', mrp: 100, price: 90, sku: '', barcode: '' }],
-    images: [], thumbnail: '',
-    batchNumber: `NZ-${new Date().getFullYear()}-001`,
-    mfgDate: new Date().toISOString().slice(0, 10),
-    expDate: new Date(Date.now() + 365 * 86400000).toISOString().slice(0, 10),
-    tags: [],
-    metaTitle: '', metaDescription: '',
-    stockStatus: 'in-stock',
-  });
-  const [tagInput, setTagInput] = useState('');
+  // Single mode
+  const [code, setCode] = useState('NZ-HP-100');
+  const [format, setFormat] = useState('CODE128');
+
+  // Batch mode
+  const [selectedSkus, setSelectedSkus] = useState({});
+  const printRef = useRef(null);
 
   useEffect(() => {
-    if (mode === 'edit' && id) {
-      fetch(`/api/products/${id}`).then(r => r.json()).then(d => {
-        setForm(prev => ({ ...prev, ...d }));
-        setLoading(false);
-      });
-    }
-  }, [mode, id]);
+    fetch('/api/products').then(r => r.json()).then(setProducts);
+  }, []);
 
-  const onDrop = async (files) => {
-    try {
-      const base64s = await Promise.all(files.slice(0, 5).map(f => fileToBase64(f)));
-      setForm(prev => ({
-        ...prev,
-        images: [...prev.images, ...base64s].slice(0, 8),
-        thumbnail: prev.thumbnail || base64s[0],
-      }));
-      toast.success(`${base64s.length} image(s) uploaded`);
-    } catch { toast.error('Upload failed'); }
+  const allVariants = products.flatMap(p =>
+    (p.variants || []).map(v => ({ ...v, productName: p.name, productSlug: p.slug, batchNumber: p.batchNumber, mfgDate: p.mfgDate }))
+  );
+
+  const toggleSku = (sku) => setSelectedSkus(prev => ({ ...prev, [sku]: !prev[sku] }));
+  const selectAll = () => setSelectedSkus(Object.fromEntries(allVariants.map(v => [v.sku, true])));
+  const clearAll = () => setSelectedSkus({});
+
+  const selectedVariants = allVariants.filter(v => selectedSkus[v.sku]);
+
+  const downloadSinglePng = () => {
+    const svg = document.querySelector('#single-barcode svg');
+    if (!svg) return;
+    const xml = new XMLSerializer().serializeToString(svg);
+    const blob = new Blob([xml], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width * 2; canvas.height = img.height * 2;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = `barcode-${code}.png`; a.click();
+      URL.revokeObjectURL(url);
+    };
+    img.src = url;
   };
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop, accept: { 'image/*': [] }, maxSize: 10 * 1024 * 1024,
-  });
-
-  const setField = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
-
-  const setVariant = (i, k, v) => {
-    setForm(prev => {
-      const variants = [...prev.variants];
-      variants[i] = { ...variants[i], [k]: v };
-      return { ...prev, variants };
-    });
+  const downloadSingleSvg = () => {
+    const svg = document.querySelector('#single-barcode svg');
+    if (!svg) return;
+    const xml = new XMLSerializer().serializeToString(svg);
+    const blob = new Blob([xml], { type: 'image/svg+xml' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `barcode-${code}.svg`; a.click();
   };
 
-  const addVariant = () => {
-    setForm(prev => ({
-      ...prev,
-      variants: [...prev.variants, { weight: '50g', mrp: 50, price: 45, sku: '', barcode: '' }],
-    }));
+  const printSheet = () => {
+    window.print();
   };
 
-  const removeVariant = (i) => {
-    setForm(prev => ({ ...prev, variants: prev.variants.filter((_, idx) => idx !== i) }));
-  };
-
-  const generateSku = (i) => {
-    const namePart = form.name.split(' ')[0]?.slice(0, 2).toUpperCase() || 'XX';
-    const weightPart = form.variants[i].weight.replace(/[^0-9]/g, '');
-    const sku = `NZ-${namePart}-${weightPart}`;
-    setVariant(i, 'sku', sku);
-    if (!form.variants[i].barcode) {
-      const barcode = '890' + Math.floor(1000000000 + Math.random() * 9000000000);
-      setVariant(i, 'barcode', barcode);
-    }
-  };
-
-  const addTag = () => {
-    const t = tagInput.trim();
-    if (t && !form.tags.includes(t)) {
-      setField('tags', [...form.tags, t]);
-      setTagInput('');
-    }
-  };
-
-  const removeTag = (t) => setField('tags', form.tags.filter(x => x !== t));
-
-  const removeImage = (i) => {
-    const imgs = form.images.filter((_, idx) => idx !== i);
-    setForm(prev => ({
-      ...prev,
-      images: imgs,
-      thumbnail: prev.thumbnail === prev.images[i] ? (imgs[0] || '') : prev.thumbnail,
-    }));
-  };
-
-  const save = async () => {
-    if (!form.name) { toast.error('Name is required'); return; }
-    setSaving(true);
-    const payload = { ...form, slug: form.slug || slugify(form.name) };
-    const token = localStorage.getItem('nz_admin_token');
-    const url = mode === 'edit' ? `/api/products/${id}` : '/api/products';
-    const method = mode === 'edit' ? 'PUT' : 'POST';
-    try {
-      const r = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(payload),
-      });
-      if (r.ok) {
-        toast.success(`Product ${mode === 'edit' ? 'updated' : 'created'}!`);
-        router.push('/admin/products');
-      } else {
-        const e = await r.json();
-        toast.error(e.error || 'Save failed');
+  const downloadPdf = async () => {
+    if (!printRef.current) return;
+    toast.info('Generating PDF…');
+    const canvas = await html2canvas(printRef.current, { scale: 2, backgroundColor: '#ffffff' });
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pdfW = 210, pdfH = 297;
+    const ratio = canvas.width / canvas.height;
+    const w = pdfW - 20;
+    const h = w / ratio;
+    let position = 10;
+    if (h < pdfH - 20) {
+      pdf.addImage(imgData, 'PNG', 10, position, w, h);
+    } else {
+      // multi-page
+      let remaining = h;
+      let y = 10;
+      while (remaining > 0) {
+        pdf.addImage(imgData, 'PNG', 10, y, w, h);
+        remaining -= (pdfH - 20);
+        if (remaining > 0) { pdf.addPage(); y = 10 - (h - remaining); }
       }
-    } catch { toast.error('Network error'); }
-    setSaving(false);
+    }
+    pdf.save(`nimad-zayka-barcodes-${Date.now()}.pdf`);
+    toast.success('PDF downloaded');
   };
-
-  if (loading) return <p className="text-zinc-500">Loading…</p>;
 
   return (
-    <div className="max-w-5xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <Link href="/admin/products"><Button variant="outline" size="icon"><ArrowLeft className="w-4 h-4" /></Button></Link>
-          <div>
-            <h1 className="font-serif-display text-2xl sm:text-3xl font-bold text-red-900">
-              {mode === 'edit' ? 'Edit Product' : 'Add New Product'}
-            </h1>
-            <p className="text-zinc-600 text-sm">Manage product details, variants & SEO</p>
-          </div>
-        </div>
-        <Button onClick={save} disabled={saving} className="btn-gold gap-2">
-          <Save className="w-4 h-4" /> {saving ? 'Saving…' : 'Save Product'}
-        </Button>
+    <div className="max-w-7xl">
+      <div className="mb-6 print:hidden">
+        <h1 className="font-serif-display text-3xl font-bold text-red-900 flex items-center gap-3"><BarcodeIcon className="w-7 h-7" /> Barcode Studio</h1>
+        <p className="text-zinc-600 text-sm">Generate Code128 / EAN13 barcodes with GS1-style workflow</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 space-y-4">
-          {/* BASIC */}
-          <Card className="card-premium"><CardContent className="p-5 space-y-4">
-            <h2 className="font-serif-display text-lg font-bold text-red-900">Basic Information</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div><Label>Product Name *</Label><Input value={form.name} onChange={e => { setField('name', e.target.value); if (!form.slug || mode==='create') setField('slug', slugify(e.target.value)); }} /></div>
-              <div><Label>Hindi Name</Label><Input value={form.nameHindi} onChange={e => setField('nameHindi', e.target.value)} placeholder="हल्दी पाउडर" /></div>
-              <div><Label>URL Slug</Label><Input value={form.slug} onChange={e => setField('slug', slugify(e.target.value))} /></div>
-              <div><Label>Category</Label>
-                <Select value={form.category} onValueChange={v => setField('category', v)}>
+      <Tabs value={tab} onValueChange={setTab} className="print:hidden">
+        <TabsList className="bg-yellow-50">
+          <TabsTrigger value="single">Single Barcode</TabsTrigger>
+          <TabsTrigger value="batch">Batch Print Sheet</TabsTrigger>
+        </TabsList>
+
+        {/* SINGLE */}
+        <TabsContent value="single" className="mt-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card className="card-premium"><CardContent className="p-6 space-y-4">
+              <div>
+                <Label>Code / SKU / EAN</Label>
+                <Input value={code} onChange={e => setCode(e.target.value)} className="font-mono" />
+              </div>
+              <div>
+                <Label>Format</Label>
+                <Select value={format} onValueChange={setFormat}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="premium-box">Premium Box</SelectItem>
-                    <SelectItem value="standard-plastic">Standard Plastic</SelectItem>
+                    <SelectItem value="CODE128">Code 128 (alphanumeric)</SelectItem>
+                    <SelectItem value="EAN13">EAN-13 (13 digits)</SelectItem>
+                    <SelectItem value="EAN8">EAN-8 (8 digits)</SelectItem>
+                    <SelectItem value="UPC">UPC-A</SelectItem>
+                    <SelectItem value="CODE39">Code 39</SelectItem>
+                    <SelectItem value="ITF14">ITF-14</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-zinc-500 mt-1">EAN-13 needs exactly 13 numeric digits.</p>
+              </div>
+
+              <div>
+                <Label>Quick Pick from Products</Label>
+                <Select onValueChange={v => setCode(v)}>
+                  <SelectTrigger><SelectValue placeholder="Choose a product variant…" /></SelectTrigger>
+                  <SelectContent>
+                    {allVariants.map(v => (
+                      <SelectItem key={v.sku} value={v.sku}>{v.productName} – {v.weight} – {v.sku}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
-              <div className="sm:col-span-2"><Label>Tagline</Label><Input value={form.tagline} onChange={e => setField('tagline', e.target.value)} placeholder="e.g. The Heart of Indian Cuisine" /></div>
-            </div>
-          </CardContent></Card>
+            </CardContent></Card>
 
-          {/* CONTENT */}
-          <Card className="card-premium"><CardContent className="p-5 space-y-3">
-            <h2 className="font-serif-display text-lg font-bold text-red-900">Content</h2>
-            <div><Label>Description</Label><Textarea rows={3} value={form.description} onChange={e => setField('description', e.target.value)} /></div>
-            <div><Label>Ingredients</Label><Textarea rows={2} value={form.ingredients} onChange={e => setField('ingredients', e.target.value)} /></div>
-            <div><Label>Usage Suggestions</Label><Textarea rows={2} value={form.usage} onChange={e => setField('usage', e.target.value)} /></div>
-            <div><Label>Recipe Ideas</Label><Textarea rows={2} value={form.recipes} onChange={e => setField('recipes', e.target.value)} /></div>
-          </CardContent></Card>
+            <Card className="card-premium"><CardContent className="p-6">
+              <h3 className="font-serif-display text-lg font-bold text-red-900 mb-3">Preview</h3>
+              <div id="single-barcode" className="bg-white p-6 rounded-xl border border-yellow-700/20 flex items-center justify-center">
+                <BarcodeImage value={code} format={format} height={100} width={2.5} />
+              </div>
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                <Button onClick={downloadSinglePng} className="btn-gold gap-1.5"><Download className="w-4 h-4" /> PNG</Button>
+                <Button onClick={downloadSingleSvg} variant="outline" className="gap-1.5 border-red-700 text-red-800"><Download className="w-4 h-4" /> SVG</Button>
+                <Button onClick={printSheet} variant="outline" className="gap-1.5"><Printer className="w-4 h-4" /> Print</Button>
+              </div>
+            </CardContent></Card>
+          </div>
+        </TabsContent>
 
-          {/* VARIANTS */}
+        {/* BATCH */}
+        <TabsContent value="batch" className="mt-4">
           <Card className="card-premium"><CardContent className="p-5">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-serif-display text-lg font-bold text-red-900">Variants & Pricing</h2>
-              <Button onClick={addVariant} size="sm" variant="outline" className="gap-1.5"><Plus className="w-4 h-4" /> Add Variant</Button>
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+              <h3 className="font-serif-display text-lg font-bold text-red-900">Select Variants for Printing</h3>
+              <div className="flex gap-2">
+                <Button onClick={selectAll} variant="outline" size="sm">Select All</Button>
+                <Button onClick={clearAll} variant="outline" size="sm">Clear</Button>
+              </div>
             </div>
-            <div className="space-y-3">
-              {form.variants.map((v, i) => (
-                <div key={i} className="grid grid-cols-2 sm:grid-cols-6 gap-2 p-3 rounded-lg bg-yellow-50 border border-yellow-700/20">
-                  <div><Label className="text-xs">Weight</Label><Input value={v.weight} onChange={e => setVariant(i, 'weight', e.target.value)} placeholder="100g" /></div>
-                  <div><Label className="text-xs">MRP ₹</Label><Input type="number" value={v.mrp} onChange={e => setVariant(i, 'mrp', Number(e.target.value))} /></div>
-                  <div><Label className="text-xs">Price ₹</Label><Input type="number" value={v.price} onChange={e => setVariant(i, 'price', Number(e.target.value))} /></div>
-                  <div className="sm:col-span-1"><Label className="text-xs">SKU</Label><Input value={v.sku} onChange={e => setVariant(i, 'sku', e.target.value)} placeholder="NZ-XX-100" /></div>
-                  <div className="sm:col-span-1"><Label className="text-xs">Barcode</Label><Input value={v.barcode} onChange={e => setVariant(i, 'barcode', e.target.value)} placeholder="8901234XXXXXX" /></div>
-                  <div className="flex items-end gap-1">
-                    <Button size="sm" variant="outline" onClick={() => generateSku(i)} className="flex-1 text-xs">Auto</Button>
-                    {form.variants.length > 1 && <Button size="sm" variant="outline" onClick={() => removeVariant(i)} className="text-red-700"><X className="w-4 h-4" /></Button>}
+            <div className="max-h-80 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              {allVariants.map(v => (
+                <label key={v.sku} className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer ${selectedSkus[v.sku] ? 'border-red-700 bg-red-50' : 'border-yellow-700/20 bg-white'}`}>
+                  <Checkbox checked={!!selectedSkus[v.sku]} onCheckedChange={() => toggleSku(v.sku)} />
+                  <div className="text-sm flex-1 min-w-0">
+                    <div className="font-semibold text-zinc-800 truncate">{v.productName}</div>
+                    <div className="text-xs text-zinc-500">{v.weight} · {v.sku}</div>
                   </div>
+                </label>
+              ))}
+            </div>
+            <div className="mt-4 flex items-center justify-between border-t border-yellow-700/20 pt-3">
+              <Badge className="bg-red-900 text-yellow-300">{selectedVariants.length} selected</Badge>
+              <div className="flex gap-2">
+                <Button onClick={downloadPdf} variant="outline" className="gap-1.5 border-red-700 text-red-800" disabled={!selectedVariants.length}><FileText className="w-4 h-4" /> Download PDF</Button>
+                <Button onClick={printSheet} className="btn-gold gap-1.5" disabled={!selectedVariants.length}><Printer className="w-4 h-4" /> Print Sheet</Button>
+              </div>
+            </div>
+          </CardContent></Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* PRINTABLE LABEL SHEET */}
+      <div className="mt-6" ref={printRef}>
+        {tab === 'batch' && selectedVariants.length > 0 && (
+          <div className="bg-white p-6 rounded-xl border border-yellow-700/20 print:border-0 print:p-0">
+            <div className="text-center mb-4 print:hidden">
+              <h2 className="font-serif-display text-xl font-bold text-red-900">Label Sheet Preview</h2>
+              <p className="text-xs text-zinc-500">A4 portrait · 4 columns x N rows · Nimad ZAYKA branded</p>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 print:gap-2">
+              {selectedVariants.map(v => (
+                <div key={v.sku} className="border border-zinc-300 rounded-md p-2 bg-white text-center break-inside-avoid">
+                  <div className="text-[10px] font-bold text-red-800 font-display tracking-wider">NIMAD ZAYKA</div>
+                  <div className="text-[9px] text-zinc-600 truncate">{v.productName}</div>
+                  <div className="my-1 flex justify-center">
+                    <BarcodeImage value={v.barcode || v.sku} format={(v.barcode && v.barcode.length === 13) ? 'EAN13' : 'CODE128'} height={40} width={1.2} displayValue={false} />
+                  </div>
+                  <div className="text-[8px] font-mono text-zinc-800">{v.barcode || v.sku}</div>
+                  <div className="text-[9px] font-semibold text-zinc-700 mt-1">{v.weight} · ₹{v.price}</div>
+                  <div className="text-[7px] text-zinc-500">Batch: {v.batchNumber}</div>
                 </div>
               ))}
             </div>
-          </CardContent></Card>
-
-          {/* SEO */}
-          <Card className="card-premium"><CardContent className="p-5 space-y-3">
-            <h2 className="font-serif-display text-lg font-bold text-red-900">SEO</h2>
-            <div><Label>Meta Title</Label><Input value={form.metaTitle} onChange={e => setField('metaTitle', e.target.value)} /></div>
-            <div><Label>Meta Description</Label><Textarea rows={2} value={form.metaDescription} onChange={e => setField('metaDescription', e.target.value)} /></div>
-            <div>
-              <Label>Tags</Label>
-              <div className="flex gap-2 mt-1">
-                <Input value={tagInput} onChange={e => setTagInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }} placeholder="Add tag and press Enter" />
-                <Button onClick={addTag} variant="outline" size="sm">Add</Button>
-              </div>
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                {form.tags.map(t => (
-                  <Badge key={t} className="bg-yellow-200 text-zinc-800 hover:bg-yellow-200 gap-1 pr-1">
-                    {t} <button onClick={() => removeTag(t)} className="hover:text-red-700"><X className="w-3 h-3" /></button>
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          </CardContent></Card>
-        </div>
-
-        {/* RIGHT COLUMN */}
-        <div className="space-y-4">
-          {/* IMAGES */}
-          <Card className="card-premium"><CardContent className="p-5 space-y-3">
-            <h2 className="font-serif-display text-lg font-bold text-red-900">Images</h2>
-            <div {...getRootProps()} className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${isDragActive ? 'border-red-700 bg-red-50' : 'border-yellow-700/30 bg-yellow-50/50 hover:bg-yellow-50'}`}>
-              <input {...getInputProps()} />
-              <Upload className="w-8 h-8 mx-auto text-yellow-700 mb-2" />
-              <p className="text-sm text-zinc-700">{isDragActive ? 'Drop here…' : 'Drag & drop or click to upload'}</p>
-              <p className="text-xs text-zinc-500 mt-1">Max 8 images, 10MB each</p>
-            </div>
-            {form.images.length > 0 && (
-              <div className="grid grid-cols-3 gap-2">
-                {form.images.map((img, i) => (
-                  <div key={i} className="relative aspect-square rounded-lg overflow-hidden border border-yellow-700/20 group">
-                    <img src={img} alt={`img ${i}`} className="w-full h-full object-cover" />
-                    {form.thumbnail === img && <Badge className="absolute top-1 left-1 bg-yellow-400 text-red-900 text-[10px]">MAIN</Badge>}
-                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
-                      <Button size="sm" variant="outline" onClick={() => setField('thumbnail', img)} className="h-7 text-xs">Set Main</Button>
-                      <Button size="sm" variant="outline" onClick={() => removeImage(i)} className="h-7 text-xs text-red-700">Remove</Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent></Card>
-
-          {/* BATCH */}
-          <Card className="card-premium"><CardContent className="p-5 space-y-3">
-            <h2 className="font-serif-display text-lg font-bold text-red-900">Batch & Dates</h2>
-            <div><Label>Batch Number</Label><Input value={form.batchNumber} onChange={e => setField('batchNumber', e.target.value)} /></div>
-            <div><Label>Manufacturing Date</Label><Input type="date" value={form.mfgDate} onChange={e => setField('mfgDate', e.target.value)} /></div>
-            <div><Label>Expiry Date</Label><Input type="date" value={form.expDate} onChange={e => setField('expDate', e.target.value)} /></div>
-          </CardContent></Card>
-
-          {/* STOCK */}
-          <Card className="card-premium"><CardContent className="p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <Label>In Stock</Label>
-                <p className="text-xs text-zinc-500">Toggle availability</p>
-              </div>
-              <Switch checked={form.stockStatus === 'in-stock'} onCheckedChange={c => setField('stockStatus', c ? 'in-stock' : 'out-of-stock')} />
-            </div>
-          </CardContent></Card>
-        </div>
+          </div>
+        )}
       </div>
+
+      <style jsx global>{`
+        @media print {
+          body { background: white; }
+          aside, header, .print\:hidden { display: none !important; }
+          main { padding: 0 !important; }
+        }
+      `}</style>
     </div>
   );
 }
