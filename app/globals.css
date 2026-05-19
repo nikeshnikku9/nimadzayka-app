@@ -1,40 +1,32 @@
-body{
-  background:#2b1810 !important;
-  color:white !important;
+.admin-glass{
+  background: rgba(35,20,10,0.75);
+  backdrop-filter: blur(10px);
+  border:1px solid rgba(255,180,70,0.15);
+  box-shadow:0 8px 32px rgba(0,0,0,0.35);
 }
 
-main{
-  background:#2b1810 !important;
+.admin-card{
+  background: rgba(45,25,12,0.82);
+  border:1px solid rgba(255,180,70,0.12);
+  border-radius:20px;
+  color:white;
 }
 
-aside{
-  background:#1e120d !important;
+.admin-sidebar{
+  background: rgba(20,10,5,0.92);
+  border-right:1px solid rgba(255,180,70,0.12);
 }
 
-.card,
-div[class*="card"],
-section{
-  background:#3a2418 !important;
-  color:white !important;
-  border:1px solid #5a3a28 !important;
+.admin-title{
+  color:#ffcc70;
 }
 
-input,
-select,
-textarea{
-  background:#2a1a12 !important;
-  color:white !important;
-  border:1px solid #6b442d !important;
+.admin-input{
+  background:#2b1810;
+  border:1px solid #6b442d;
+  color:white;
 }
 
-h1,h2,h3,h4,h5,h6,p,span,label{
-  color:white !important;
-}
-
-button{
-  color:white !important;
-}
-
-a{
-  color:#facc15 !important;
+.admin-input::placeholder{
+  color:#c9a27a;
 }
