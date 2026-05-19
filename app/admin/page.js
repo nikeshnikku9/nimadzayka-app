@@ -1,21 +1,77 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 
-export default function AdminLogin() {
-  const router = useRouter()
+export default function AdminPage() {
 
+  const [loggedIn, setLoggedIn] = useState(false)
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
 
-  const handleLogin = () => {
+  const login = () => {
     if (password === 'nimad123') {
-      localStorage.setItem('adminLoggedIn', 'true')
-      router.push('/admin/dashboard')
+      setLoggedIn(true)
     } else {
-      setError('Wrong Password')
+      alert('Wrong Password')
     }
+  }
+
+  if (loggedIn) {
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          background: '#000',
+          color: '#fff',
+          padding: '40px',
+          fontFamily: 'Arial'
+        }}
+      >
+
+        <h1 style={{
+          fontSize: '42px',
+          marginBottom: '30px',
+          color: '#facc15'
+        }}>
+          NIMAD ZAYKA Dashboard
+        </h1>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit,minmax(250px,1fr))',
+          gap: '20px'
+        }}>
+
+          <div style={{
+            background: '#111',
+            padding: '30px',
+            borderRadius: '20px'
+          }}>
+            <h2>Products</h2>
+            <p>Manage products</p>
+          </div>
+
+          <div style={{
+            background: '#111',
+            padding: '30px',
+            borderRadius: '20px'
+          }}>
+            <h2>Barcode</h2>
+            <p>Create barcodes</p>
+          </div>
+
+          <div style={{
+            background: '#111',
+            padding: '30px',
+            borderRadius: '20px'
+          }}>
+            <h2>QR Codes</h2>
+            <p>Generate QR codes</p>
+          </div>
+
+        </div>
+
+      </div>
+    )
   }
 
   return (
@@ -26,25 +82,31 @@ export default function AdminLogin() {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        color: '#fff',
+        fontFamily: 'Arial'
       }}
     >
-      <div
-        style={{
-          background: '#111',
-          padding: '40px',
-          borderRadius: '20px',
-          width: '350px',
-          textAlign: 'center',
-          border: '1px solid #333',
-        }}
-      >
-        <h1 style={{ fontSize: '32px', marginBottom: '10px' }}>
+
+      <div style={{
+        width: '350px',
+        background: '#111',
+        padding: '40px',
+        borderRadius: '20px',
+        textAlign: 'center'
+      }}>
+
+        <h1 style={{
+          color: '#fff',
+          fontSize: '38px',
+          marginBottom: '10px'
+        }}>
           NIMAD ZAYKA
         </h1>
 
-        <p style={{ marginBottom: '30px', color: '#aaa' }}>
-          Admin Panel Login
+        <p style={{
+          color: '#999',
+          marginBottom: '30px'
+        }}>
+          Admin Login
         </p>
 
         <input
@@ -55,35 +117,30 @@ export default function AdminLogin() {
           style={{
             width: '100%',
             padding: '14px',
-            borderRadius: '10px',
+            borderRadius: '12px',
             border: 'none',
-            marginBottom: '20px',
-            outline: 'none',
+            marginBottom: '20px'
           }}
         />
 
         <button
-          onClick={handleLogin}
+          onClick={login}
           style={{
             width: '100%',
             padding: '14px',
-            borderRadius: '10px',
+            borderRadius: '12px',
             border: 'none',
-            background: '#c1121f',
+            background: '#dc2626',
             color: '#fff',
             fontSize: '18px',
-            cursor: 'pointer',
+            cursor: 'pointer'
           }}
         >
           Login
         </button>
 
-        {error && (
-          <p style={{ color: 'red', marginTop: '15px' }}>
-            {error}
-          </p>
-        )}
       </div>
+
     </div>
   )
 }
