@@ -1,62 +1,72 @@
 'use client'
 
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+
 export default function Dashboard() {
+  const router = useRouter()
+
+  useEffect(() => {
+    const loggedIn = localStorage.getItem('adminLoggedIn')
+
+    if (!loggedIn) {
+      router.push('/admin')
+    }
+  }, [])
 
   return (
-    <main className="min-h-screen bg-black text-white p-8">
-
-      <h1 className="text-5xl font-bold text-yellow-400 mb-4">
-        NIMAD ZAYKA
+    <div
+      style={{
+        minHeight: '100vh',
+        background: '#000',
+        color: '#fff',
+        padding: '40px',
+      }}
+    >
+      <h1 style={{ fontSize: '40px', marginBottom: '30px' }}>
+        NIMAD ZAYKA Dashboard
       </h1>
 
-      <p className="text-zinc-300 mb-10">
-        Admin Dashboard
-      </p>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-        <div className="bg-zinc-900 border border-yellow-500 rounded-3xl p-6">
-          <h2 className="text-2xl font-bold text-yellow-300">
-            Products
-          </h2>
-
-          <p className="mt-3 text-zinc-400">
-            Add & manage products
-          </p>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit,minmax(250px,1fr))',
+          gap: '20px',
+        }}
+      >
+        <div
+          style={{
+            background: '#111',
+            padding: '30px',
+            borderRadius: '20px',
+          }}
+        >
+          <h2>Products</h2>
+          <p>Manage spice products</p>
         </div>
 
-        <div className="bg-zinc-900 border border-yellow-500 rounded-3xl p-6">
-          <h2 className="text-2xl font-bold text-yellow-300">
-            QR Codes
-          </h2>
-
-          <p className="mt-3 text-zinc-400">
-            Generate QR codes
-          </p>
+        <div
+          style={{
+            background: '#111',
+            padding: '30px',
+            borderRadius: '20px',
+          }}
+        >
+          <h2>Barcode</h2>
+          <p>Create product barcodes</p>
         </div>
 
-        <div className="bg-zinc-900 border border-yellow-500 rounded-3xl p-6">
-          <h2 className="text-2xl font-bold text-yellow-300">
-            Barcode
-          </h2>
-
-          <p className="mt-3 text-zinc-400">
-            Create product barcodes
-          </p>
+        <div
+          style={{
+            background: '#111',
+            padding: '30px',
+            borderRadius: '20px',
+          }}
+        >
+          <h2>Orders</h2>
+          <p>Manage enquiries/orders</p>
         </div>
-
-        <div className="bg-zinc-900 border border-yellow-500 rounded-3xl p-6">
-          <h2 className="text-2xl font-bold text-yellow-300">
-            Orders
-          </h2>
-
-          <p className="mt-3 text-zinc-400">
-            Customer enquiries & orders
-          </p>
-        </div>
-
       </div>
-
-    </main>
+    </div>
   )
 }
