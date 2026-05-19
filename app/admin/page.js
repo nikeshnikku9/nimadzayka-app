@@ -1,72 +1,89 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function AdminLogin() {
+  const router = useRouter()
+
   const [password, setPassword] = useState('')
-  const [loggedIn, setLoggedIn] = useState(false)
+  const [error, setError] = useState('')
 
   const handleLogin = () => {
     if (password === 'nimad123') {
-      setLoggedIn(true)
+      localStorage.setItem('adminLoggedIn', 'true')
+      router.push('/admin/dashboard')
     } else {
-      alert('Wrong Password')
+      setError('Wrong Password')
     }
   }
 
-  if (loggedIn) {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        background: '#111',
-        color: 'white',
-        padding: '40px'
-      }}>
-        <h1>Admin Panel</h1>
-        <p>Welcome to Nimad ZAYKA Admin Dashboard</p>
-      </div>
-    )
-  }
-
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      background: '#000',
-      color: '#fff',
-      flexDirection: 'column',
-      gap: '20px'
-    }}>
-      <h1>Nimad ZAYKA Admin</h1>
-
-      <input
-        type="password"
-        placeholder="Enter Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
+    <div
+      style={{
+        minHeight: '100vh',
+        background: '#000',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        color: '#fff',
+      }}
+    >
+      <div
         style={{
-          padding: '12px',
-          borderRadius: '10px',
-          border: 'none',
-          width: '250px'
-        }}
-      />
-
-      <button
-        onClick={handleLogin}
-        style={{
-          padding: '12px 25px',
-          background: 'red',
-          color: 'white',
-          border: 'none',
-          borderRadius: '10px',
-          cursor: 'pointer'
+          background: '#111',
+          padding: '40px',
+          borderRadius: '20px',
+          width: '350px',
+          textAlign: 'center',
+          border: '1px solid #333',
         }}
       >
-        Login
-      </button>
+        <h1 style={{ fontSize: '32px', marginBottom: '10px' }}>
+          NIMAD ZAYKA
+        </h1>
+
+        <p style={{ marginBottom: '30px', color: '#aaa' }}>
+          Admin Panel Login
+        </p>
+
+        <input
+          type="password"
+          placeholder="Enter Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '14px',
+            borderRadius: '10px',
+            border: 'none',
+            marginBottom: '20px',
+            outline: 'none',
+          }}
+        />
+
+        <button
+          onClick={handleLogin}
+          style={{
+            width: '100%',
+            padding: '14px',
+            borderRadius: '10px',
+            border: 'none',
+            background: '#c1121f',
+            color: '#fff',
+            fontSize: '18px',
+            cursor: 'pointer',
+          }}
+        >
+          Login
+        </button>
+
+        {error && (
+          <p style={{ color: 'red', marginTop: '15px' }}>
+            {error}
+          </p>
+        )}
+      </div>
     </div>
   )
 }
