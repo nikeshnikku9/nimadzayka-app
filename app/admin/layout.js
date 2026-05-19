@@ -73,7 +73,11 @@ export default function AdminShell({ children }) {
   );
 
   return (
-    <div className="min-h-screen flex bg-[#fdfaf3]">
+    <div className="min-h-screen bg-cover bg-center bg-fixed"
+style={{
+  backgroundImage:
+    "linear-gradient(rgba(20,10,5,0.88), rgba(20,10,5,0.88)), url('https://images.unsplash.com/photo-1596040033229-a9821ebd058d?q=80&w=2000&auto=format&fit=crop')"
+}}
       <div className="hidden lg:block sticky top-0 h-screen">
         <Sidebar />
       </div>
