@@ -2,17 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
+html,
+body {
   margin: 0;
   padding: 0;
+  background: #050505;
+  color: white;
+  font-family: Arial, sans-serif;
+}
+
+* {
   box-sizing: border-box;
 }
 
-html,
-body {
-  width: 100%;
-  min-height: 100%;
-  background: #000;
-  color: white;
-  font-family: Arial, sans-serif;
+input,
+select {
+  background: #111 !important;
+  color: white !important;
+}
+
+button {
+  cursor: pointer;
 }
