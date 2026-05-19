@@ -88,7 +88,7 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      <Card className="card-premium">
+      <Card className="admin-card">
         <CardContent className="p-6">
           <h2 className="font-serif-display text-xl font-bold text-red-900 mb-4">Recent Activity</h2>
           {data?.recentEvents?.length ? (
