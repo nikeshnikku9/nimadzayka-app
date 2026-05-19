@@ -1,26 +1,40 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-html,
-body {
-  margin: 0;
-  padding: 0;
-  background: #050505;
-  color: white;
-  font-family: Arial, sans-serif;
+body{
+  background:#2b1810 !important;
+  color:white !important;
 }
 
-* {
-  box-sizing: border-box;
+main{
+  background:#2b1810 !important;
+}
+
+aside{
+  background:#1e120d !important;
+}
+
+.card,
+div[class*="card"],
+section{
+  background:#3a2418 !important;
+  color:white !important;
+  border:1px solid #5a3a28 !important;
 }
 
 input,
-select {
-  background: #111 !important;
-  color: white !important;
+select,
+textarea{
+  background:#2a1a12 !important;
+  color:white !important;
+  border:1px solid #6b442d !important;
 }
 
-button {
-  cursor: pointer;
+h1,h2,h3,h4,h5,h6,p,span,label{
+  color:white !important;
+}
+
+button{
+  color:white !important;
+}
+
+a{
+  color:#facc15 !important;
 }
